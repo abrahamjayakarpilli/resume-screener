@@ -576,7 +576,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const candidate = await API.getCandidate(candId);
             
             // Get Match details. For the demo / simple database, we get the latest match matching this candidate ID
-            const matches = allCandidates.filter(m => m.candidate_id.toString() === candId.toString());
+            const matches = allCandidates.filter(m => m.candidate.id.toString() === candId.toString());
             let match = matches[0];
             
             // If match not cached, retrieve fresh
@@ -585,7 +585,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 const runs = await API.getScreeningRuns();
                 runs.forEach(r => {
                     r.matches.forEach(m => {
-                        if (m.candidate_id.toString() === candId.toString()) {
+                        if (m.candidate.id.toString() === candId.toString()) {
                             match = m;
                         }
                     });
