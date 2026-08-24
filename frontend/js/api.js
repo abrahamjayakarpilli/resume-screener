@@ -53,6 +53,12 @@ const API = {
         return res.json();
     },
 
+    async getScreeningRuns() {
+        const res = await fetch(`${BASE_URL}/api/screening-runs`);
+        if (!res.ok) throw new Error("Failed to fetch screening runs");
+        return res.json();
+    },
+
     async getCandidate(id) {
         const res = await fetch(`${BASE_URL}/api/candidates/${id}`);
         if (!res.ok) throw new Error("Failed to fetch candidate details");
