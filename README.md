@@ -287,7 +287,7 @@ python -m pytest backend/tests/
 ### Installation
 1. Navigate to the project root:
    ```bash
-   cd C:\Users\abrah\.gemini\antigravity\scratch\talentlens-ai
+   cd talentlens-ai
    ```
 2. Create and activate a Virtual Environment:
    ```bash
@@ -334,7 +334,7 @@ Access the application on [http://localhost:8000](http://localhost:8000).
 ---
 
 ## 16. Interview Questions
-See [INTERVIEW.md](file:///C:/Users/abrah/.gemini/antigravity/scratch/talentlens-ai/INTERVIEW.md) in the project root for answers regarding:
+See [INTERVIEW.md](INTERVIEW.md) in the project root for answers regarding:
 * Scale-out designs to 100,000 resumes.
 * Cost reduction and API token optimization methods.
 * Details on timeline overlaps and bias protections.
