@@ -13,6 +13,27 @@ __pycache__/
 venv/
 ENV/
 
+# IDE / Editor files
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+
+# Node / Build outputs
+node_modules/
+dist/
+build/
+.next/
+out/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
 # OS files
 .DS_Store
 Thumbs.db
