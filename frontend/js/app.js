@@ -703,7 +703,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         } catch (e) {
             console.error(e);
-            alert("Error loading candidate profile.");
+            alert("Error loading candidate profile:\n" + e.message + "\n\nStack:\n" + e.stack);
             window.location.hash = "candidates";
         }
     }
