@@ -1,5 +1,5 @@
 import re
-from typing import List, Dict, Any, Tuple
+from typing import List, Dict, Any, Tuple, Optional
 from sqlalchemy.orm import Session
 from app.models.models import Match, MatchRequirement, Candidate, JobRequirement, Experience, Education
 from app.core.config import settings
