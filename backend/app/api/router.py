@@ -424,7 +424,7 @@ def compare_candidates(payload: CompareRequest, db: Session = Depends(get_db)):
             experience_years=cand.experience_years,
             strengths=strengths[:3],  # Top 3 strengths
             gaps=gaps[:3],            # Top 3 gaps
-            req_matches=req_matches
+            requirement_matches=req_matches
         ))
 
     # Generate comparative justification summary

@@ -316,7 +316,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
             sortedRuns.forEach(run => {
                 const runDate = new Date(run.created_at).toLocaleDateString();
-                const jobTitle = run.matches[0]?.screening_run.job.title || "Backend Engineer";
+                const job = allJobs.find(j => j.id === run.job_id);
+                const jobTitle = job ? job.title : "Backend Engineer";
                 const isDemo = run.name.toLowerCase().includes("demo") || jobTitle.toLowerCase().includes("demo") || (run.matches[0] && ["John Doe", "Jane Smith", "Bob Jones"].includes(run.matches[0].candidate.name));
 
                 let badgeClass = "badge-info";
@@ -377,6 +378,9 @@ document.addEventListener("DOMContentLoaded", () => {
     // 3. Candidates Directory list data
     async function loadCandidatesData() {
         try {
+            const jobs = await API.getJobs();
+            allJobs = jobs;
+
             const runs = await API.getScreeningRuns();
             const jobFilter = document.getElementById("filter-job");
             const statusFilter = document.getElementById("filter-status");
@@ -385,20 +389,18 @@ document.addEventListener("DOMContentLoaded", () => {
             const selectedJobVal = jobFilter.value;
             jobFilter.innerHTML = `<option value="all">All Jobs</option>`;
             
-            const jobsMap = {};
-            runs.forEach(r => {
-                const job = r.matches[0]?.screening_run.job;
-                if (job && !jobsMap[job.id]) {
-                    jobsMap[job.id] = job.title;
-                    jobFilter.innerHTML += `<option value="${job.id}">${job.title}</option>`;
-                }
+            allJobs.forEach(job => {
+                jobFilter.innerHTML += `<option value="${job.id}">${job.title}</option>`;
             });
             jobFilter.value = selectedJobVal;
 
-            // Collect all matches
+            // Collect all matches and bind metadata
             let listData = [];
             runs.forEach(run => {
+                const job = allJobs.find(j => j.id === run.job_id);
                 run.matches.forEach(match => {
+                    match.job_id = run.job_id;
+                    match.job_title = job ? job.title : "Unknown Job";
                     listData.push(match);
                 });
             });
@@ -421,7 +423,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Apply filters
         const filtered = allCandidates.filter(m => {
-            const matchesJob = jobVal === "all" || m.screening_run.job_id.toString() === jobVal;
+            const matchesJob = jobVal === "all" || m.job_id.toString() === jobVal;
             const matchesStatus = statusVal === "all" || m.recommendation === statusVal;
             return matchesJob && matchesStatus;
         });
