@@ -1058,3 +1058,197 @@ textarea.form-control {
 .comparison-table tr:hover {
     background-color: #FAFBFD;
 }
+
+/* Lucide Icon Integration Styles */
+.nav-icon svg,
+.btn-icon svg,
+.logo-icon-svg {
+    width: 16px;
+    height: 16px;
+    stroke-width: 2px;
+    vertical-align: middle;
+}
+.metric-icon svg {
+    width: 22px;
+    height: 22px;
+    stroke-width: 2px;
+    color: var(--color-primary);
+}
+
+/* Dashboard Upgrades */
+.ranking-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 20px;
+}
+.ranking-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background-color: #FAFBFD;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+.ranking-item:hover {
+    border-color: var(--color-primary);
+    background-color: var(--color-primary-light);
+}
+.ranking-item-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.ranking-rank {
+    font-weight: 700;
+    color: var(--color-primary);
+    font-size: 13px;
+}
+.ranking-name {
+    font-weight: 600;
+    color: var(--color-text-primary);
+    font-size: 13px;
+}
+.ranking-score {
+    font-weight: 700;
+    color: var(--color-primary);
+    font-size: 13px;
+}
+
+/* Recruiter Insights Panel */
+.insight-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 12px;
+    font-size: 12px;
+    line-height: 1.4;
+    color: var(--color-text-secondary);
+}
+.insight-item:last-child {
+    margin-bottom: 0;
+}
+.insight-icon {
+    color: var(--color-primary);
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+
+/* Requirement Coverage Card */
+.coverage-item {
+    margin-bottom: 12px;
+}
+.coverage-item:last-child {
+    margin-bottom: 0;
+}
+.coverage-lbl {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--color-text-primary);
+    margin-bottom: 4px;
+}
+.coverage-bar-bg {
+    height: 6px;
+    background-color: #EEF2F6;
+    border-radius: 3px;
+    overflow: hidden;
+}
+.coverage-bar-fill {
+    height: 100%;
+    background-color: var(--color-success);
+    border-radius: 3px;
+    transition: width 0.3s ease;
+}
+
+/* Empty State Styling */
+.empty-state-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 40px;
+    text-align: center;
+    background-color: var(--color-surface);
+    border: 1px dashed var(--color-border);
+    border-radius: var(--radius-lg);
+    max-width: 600px;
+    margin: 40px auto;
+    box-shadow: var(--shadow-sm);
+}
+.empty-icon {
+    width: 44px;
+    height: 44px;
+    color: var(--color-text-muted);
+    margin-bottom: 16px;
+}
+.empty-state-panel h3 {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    margin-bottom: 8px;
+}
+.empty-state-panel p {
+    font-size: 12px;
+    color: var(--color-text-secondary);
+    margin-bottom: 24px;
+    max-width: 380px;
+    line-height: 1.5;
+}
+.empty-actions {
+    display: flex;
+    gap: 12px;
+}
+
+/* Tabs for Candidate profile progressive disclosure */
+.profile-tabs-bar {
+    display: flex;
+    gap: 8px;
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 1px;
+    margin-bottom: 20px;
+}
+.profile-tab-btn {
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+.profile-tab-btn:hover {
+    color: var(--color-text-primary);
+}
+.profile-tab-btn.active {
+    color: var(--color-primary);
+    border-bottom-color: var(--color-primary);
+    font-weight: 600;
+}
+
+/* Audit Code JSON Viewer */
+.code-viewer {
+    background-color: #1F2937;
+    color: #F9FAFB;
+    padding: 16px;
+    border-radius: var(--radius-md);
+    font-family: Consolas, Monaco, "Andale Mono", "Ubuntu Mono", monospace;
+    font-size: 12px;
+    line-height: 1.5;
+    overflow-x: auto;
+    max-height: 500px;
+    border: 1px solid #374151;
+}
+
+/* Muted grey badge for no evidence match */
+.badge-no-evidence {
+    background-color: #F3F4F6;
+    color: #4B5563;
+    border: 1px solid #D1D5DB;
+}

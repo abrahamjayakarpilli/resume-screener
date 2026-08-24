@@ -432,12 +432,49 @@ def compare_candidates(payload: CompareRequest, db: Session = Depends(get_db)):
     best_candidate = summaries_sorted[0]
     second_candidate = summaries_sorted[1]
     
-    justification = (
-        f"{best_candidate.name} is ranked higher than the other candidates primarily because they satisfy "
-        f"more critical technical requirements. They have demonstrated strong coverage of technical skills and "
-        f"relevant experience. In comparison, {second_candidate.name} has minor skills gaps that reduce their "
-        f"overall match alignment."
-    )
+    # Analyze status differences
+    best_req_statuses = {rm["requirement_id"]: rm["status"] for rm in best_candidate.req_matches}
+    sec_req_statuses = {rm["requirement_id"]: rm["status"] for rm in second_candidate.req_matches}
+    
+    better_reqs = []
+    worse_reqs = []
+    
+    for req in job.requirements:
+        best_stat = best_req_statuses.get(req.id, "UNKNOWN")
+        sec_stat = sec_req_statuses.get(req.id, "UNKNOWN")
+        
+        # Best candidate meets this, but second candidate lacks it
+        if best_stat in ("MATCH", "PARTIAL") and sec_stat in ("MISSING", "UNKNOWN"):
+            better_reqs.append(req.requirement_text)
+        # Second candidate meets this, but best candidate lacks it
+        elif sec_stat in ("MATCH", "PARTIAL") and best_stat in ("MISSING", "UNKNOWN"):
+            worse_reqs.append(req.requirement_text)
+            
+    # Formulate justification sentence based on evidence delta
+    if better_reqs:
+        justification = (
+            f"{best_candidate.name} is ranked higher than {second_candidate.name} (overall suitability: "
+            f"{best_candidate.overall_score:.0f}% vs {second_candidate.overall_score:.0f}%) "
+            f"primarily because they provide clear evidence for: {', '.join(better_reqs)}, which "
+            f"is missing or has no evidence in {second_candidate.name}'s profile."
+        )
+        if worse_reqs:
+            justification += (
+                f" However, {second_candidate.name} shows stronger evidence for: {', '.join(worse_reqs)}."
+            )
+    else:
+        # Fallback if no specific difference in status, compare total experience or scores
+        if best_candidate.experience_years > second_candidate.experience_years:
+            justification = (
+                f"{best_candidate.name} ranks higher than {second_candidate.name} primarily due to "
+                f"greater professional experience ({best_candidate.experience_years:.1f} years vs "
+                f"{second_candidate.experience_years:.1f} years) and stronger technical alignment."
+            )
+        else:
+            justification = (
+                f"{best_candidate.name} shows slightly stronger technical evidence across the core requirements "
+                f"than {second_candidate.name}, leading to a higher calculated suitability match score."
+            )
 
     return CompareResponse(
         job_title=job.title,

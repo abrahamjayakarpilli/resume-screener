@@ -1,4 +1,7 @@
 import os
+import sys
+# Automatically append backend folder to system paths
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles

@@ -121,63 +121,223 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             const jobs = await API.getJobs();
             allJobs = jobs;
-            document.getElementById("metric-total-jobs").innerText = jobs.length;
 
             const runs = await API.getScreeningRuns();
             
             // Collect all matches from runs
             let totalMatches = 0;
             let shortlisted = 0;
+            let needsReview = 0;
             let scoreSum = 0.0;
             let matchCount = 0;
+            let allMatches = [];
 
             runs.forEach(r => {
                 r.matches.forEach(m => {
                     totalMatches++;
                     if (m.recommendation === "SHORTLIST") shortlisted++;
+                    else if (m.recommendation === "REVIEW") needsReview++;
                     scoreSum += m.overall_score;
                     matchCount++;
+                    allMatches.push(m);
                 });
             });
 
+            // Empty state handling
+            let emptyEl = document.getElementById("dashboard-empty-state");
+            if (totalMatches === 0) {
+                document.getElementById("metric-total-candidates").innerText = "—";
+                document.getElementById("metric-shortlisted").innerText = "—";
+                document.getElementById("metric-needs-review").innerText = "—";
+                document.getElementById("metric-avg-score").innerText = "—";
+
+                document.getElementById("dashboard-main-layouts").style.display = "none";
+                if (!emptyEl) {
+                    emptyEl = document.createElement("div");
+                    emptyEl.id = "dashboard-empty-state";
+                    emptyEl.className = "empty-state-panel";
+                    document.getElementById("view-dashboard").appendChild(emptyEl);
+                }
+                emptyEl.style.display = "flex";
+                emptyEl.innerHTML = `
+                    <i data-lucide="folder-search" class="empty-icon"></i>
+                    <h3>No Screening Runs Recorded Yet</h3>
+                    <p>Register a job profile and upload resumes to run candidate matching and unlock intelligence reports here.</p>
+                    <div class="empty-actions">
+                        <button class="btn btn-primary" id="btn-empty-create-job"><i data-lucide="plus-circle" style="width:14px; height:14px; margin-right:6px; vertical-align:middle; display:inline-block;"></i>Create Job</button>
+                        <button class="btn btn-outline" id="btn-empty-demo-run"><i data-lucide="play" style="width:14px; height:14px; margin-right:6px; vertical-align:middle; display:inline-block;"></i>Run Demo Run</button>
+                    </div>
+                `;
+                document.getElementById("btn-empty-create-job").onclick = () => modals.job.style.display = "flex";
+                document.getElementById("btn-empty-demo-run").onclick = () => {
+                    document.getElementById("btn-quick-run-demo").click();
+                };
+                lucide.createIcons();
+                return;
+            }
+
+            if (emptyEl) emptyEl.style.display = "none";
+            document.getElementById("dashboard-main-layouts").style.display = "grid";
+
             document.getElementById("metric-total-candidates").innerText = totalMatches;
             document.getElementById("metric-shortlisted").innerText = shortlisted;
+            document.getElementById("metric-needs-review").innerText = needsReview;
             
             const avgScore = matchCount > 0 ? Math.round(scoreSum / matchCount) : 0;
             document.getElementById("metric-avg-score").innerText = `${avgScore}%`;
 
-            // Render Recent Runs Table
+            // 1. Render Top Candidate Rankings (Recent run or overall)
+            const rankingList = document.getElementById("dashboard-rankings-list");
+            rankingList.innerHTML = "";
+            
+            const sortedMatches = [...allMatches].sort((a, b) => b.overall_score - a.overall_score).slice(0, 5);
+            sortedMatches.forEach((m, idx) => {
+                const isDemo = ["John Doe", "Jane Smith", "Bob Jones", "Alice White", "Charlie Brown"].includes(m.candidate.name);
+                rankingList.innerHTML += `
+                    <div class="ranking-item" onclick="window.location.hash='#candidate/${m.candidate.id}'">
+                        <div class="ranking-item-left">
+                            <span class="ranking-rank">#${idx + 1}</span>
+                            <span class="ranking-name">${m.candidate.name} ${isDemo ? '<span class="badge badge-outline" style="font-size: 8px; padding: 1px 4px; margin-left: 6px; color:#6B7280; border-color:#D1D5DB; font-weight:500;">DEMO DATA</span>' : ''}</span>
+                        </div>
+                        <span class="ranking-score">${Math.round(m.overall_score)}%</span>
+                    </div>
+                `;
+            });
+
+            // 2. Render Recruiter Insights
+            const insightsList = document.getElementById("dashboard-insights-list");
+            insightsList.innerHTML = "";
+            const insights = [];
+
+            const topMatch = sortedMatches[0];
+            if (topMatch) {
+                const isDemo = ["John Doe", "Jane Smith", "Bob Jones", "Alice White", "Charlie Brown"].includes(topMatch.candidate.name);
+                insights.push(`
+                    <i data-lucide="award" class="insight-icon" style="color:var(--color-primary);"></i>
+                    <span><strong>${topMatch.candidate.name}</strong> ${isDemo ? '(Demo)' : ''} has the strongest technical suitability match (${Math.round(topMatch.overall_score)}%).</span>
+                `);
+            }
+            if (shortlisted > 0) {
+                insights.push(`
+                    <i data-lucide="check-circle" class="insight-icon" style="color:var(--color-success);"></i>
+                    <span>${shortlisted} candidate(s) meet all critical job requirements and are shortlisted.</span>
+                `);
+            }
+            
+            // Overlapping timeline warnings count
+            const timelineWarningsCount = allMatches.filter(m => {
+                try {
+                    const w = JSON.parse(m.candidate.timeline_issues || "[]");
+                    return w && w.length > 0;
+                } catch(e) { return false; }
+            }).length;
+            if (timelineWarningsCount > 0) {
+                insights.push(`
+                    <i data-lucide="alert-triangle" class="insight-icon" style="color:var(--color-warning);"></i>
+                    <span>${timelineWarningsCount} candidate(s) have concurrent employment/study overlaps flagged for review.</span>
+                `);
+            }
+
+            // Incomplete profiles count
+            const incompleteCount = allMatches.filter(m => m.candidate.completeness_score < 70).length;
+            if (incompleteCount > 0) {
+                insights.push(`
+                    <i data-lucide="help-circle" class="insight-icon" style="color:var(--color-text-muted);"></i>
+                    <span>${incompleteCount} profile(s) have missing contact or history details (completeness &lt; 70%).</span>
+                `);
+            }
+
+            // AWS missing count
+            let missingAwsCount = 0;
+            allMatches.forEach(m => {
+                const awsReq = m.match_requirements?.find(mr => mr.requirement?.requirement_text?.toLowerCase().includes("aws"));
+                if (awsReq && (awsReq.status === "MISSING" || awsReq.status === "NO EVIDENCE")) {
+                    missingAwsCount++;
+                }
+            });
+            if (missingAwsCount > 0) {
+                insights.push(`
+                    <i data-lucide="info" class="insight-icon" style="color:var(--color-info);"></i>
+                    <span>${missingAwsCount} candidate(s) have no evidence of AWS experience in their resumes.</span>
+                `);
+            }
+
+            insightsList.innerHTML = insights.map(ins => `<div class="insight-item">${ins}</div>`).join("");
+
+            // 3. Requirement Coverage List for the most recent run
+            const coverageList = document.getElementById("dashboard-coverage-list");
+            coverageList.innerHTML = "";
+            
+            const recentRun = [...runs].sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0];
+            if (recentRun && recentRun.matches.length > 0) {
+                const runMatches = recentRun.matches;
+                const jobRequirements = recentRun.matches[0].match_requirements.map(mr => mr.requirement);
+                
+                // Keep unique requirements
+                const uniqueReqs = [];
+                const seenReqs = new Set();
+                jobRequirements.forEach(req => {
+                    if (req && !seenReqs.has(req.id)) {
+                        seenReqs.add(req.id);
+                        uniqueReqs.push(req);
+                    }
+                });
+
+                uniqueReqs.slice(0, 5).forEach(req => {
+                    let matchOrPartial = 0;
+                    runMatches.forEach(m => {
+                        const mr = m.match_requirements.find(x => x.requirement_id === req.id);
+                        if (mr && (mr.status === "MATCH" || mr.status === "PARTIAL")) {
+                            matchOrPartial++;
+                        }
+                    });
+                    const pct = Math.round((matchOrPartial / runMatches.length) * 100);
+                    coverageList.innerHTML += `
+                        <div class="coverage-item">
+                            <div class="coverage-lbl">
+                                <span>${req.requirement_text}</span>
+                                <span>${pct}%</span>
+                            </div>
+                            <div class="coverage-bar-bg">
+                                <div class="coverage-bar-fill" style="width: ${pct}%;"></div>
+                            </div>
+                        </div>
+                    `;
+                });
+            } else {
+                coverageList.innerHTML = `<p class="quick-action-tip" style="text-align:center;">No recent coverage metrics available.</p>`;
+            }
+
+            // 4. Render Recent Runs Table
             const tbody = document.querySelector("#table-recent-runs tbody");
             tbody.innerHTML = "";
 
-            if (runs.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="quick-action-tip" style="text-align:center;">No screening runs recorded. Use 'Screen Resumes' or start with the '2-Minute Demo'.</td></tr>`;
-                return;
-            }
-
-            // Sort runs by created_at desc
             const sortedRuns = [...runs].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 5);
 
             sortedRuns.forEach(run => {
                 const runDate = new Date(run.created_at).toLocaleDateString();
                 const jobTitle = run.matches[0]?.screening_run.job.title || "Backend Engineer";
-                
+                const isDemo = run.name.toLowerCase().includes("demo") || jobTitle.toLowerCase().includes("demo") || (run.matches[0] && ["John Doe", "Jane Smith", "Bob Jones"].includes(run.matches[0].candidate.name));
+
                 let badgeClass = "badge-info";
                 if (run.status === "completed") badgeClass = "badge-success";
                 else if (run.status === "failed") badgeClass = "badge-danger";
 
                 tbody.innerHTML += `
                     <tr>
-                        <td><strong>${run.name}</strong></td>
+                        <td><strong>${run.name}</strong> ${isDemo ? '<span class="badge badge-outline" style="font-size: 8px; padding: 1px 4px; color:#6B7280; border-color:#D1D5DB; font-weight:500;">DEMO DATA</span>' : ''}</td>
                         <td>${jobTitle}</td>
                         <td><span class="badge ${badgeClass}">${run.status.toUpperCase()}</span></td>
                         <td>${runDate}</td>
                         <td>
-                            <button class="btn btn-outline btn-sm" onclick="window.location.hash='candidates';">View Candidates</button>
+                            <button class="btn btn-outline btn-sm" onclick="window.location.hash='candidates';"><i data-lucide="eye" style="width:12px; height:12px; margin-right:4px; display:inline-block; vertical-align:middle;"></i>Inspect Run</button>
                         </td>
                     </tr>
                 `;
             });
+
+            // Reinitialize vector icons
+            lucide.createIcons();
         } catch (e) {
             console.error(e);
         }
@@ -288,13 +448,16 @@ document.addEventListener("DOMContentLoaded", () => {
             const topSkills = c.candidate_skills.slice(0, 3).map(cs => cs.skill.name).join(", ");
             
             // Timeline Issues
-            let timelineText = '<span style="color: var(--color-success);">None</span>';
+            let timelineText = '<span style="color: var(--color-success);"><i data-lucide="check" style="width:12px; height:12px; display:inline-block; vertical-align:middle; margin-right:4px;"></i>None</span>';
             if (c.timeline_issues) {
                 const issues = JSON.parse(c.timeline_issues);
                 if (issues.length > 0) {
-                    timelineText = `<span class="badge badge-warning">⚠️ Flagged</span>`;
+                    timelineText = `<span class="badge badge-warning"><i data-lucide="alert-triangle" style="width:12px; height:12px; display:inline-block; vertical-align:middle; margin-right:4px;"></i>Flagged</span>`;
                 }
             }
+
+            const isDemo = ["John Doe", "Jane Smith", "Bob Jones", "Alice White", "Charlie Brown"].includes(c.name);
+            const demoBadge = isDemo ? ' <span class="badge badge-outline" style="font-size: 8px; padding: 1px 4px; color:#6B7280; border-color:#D1D5DB; font-weight:500; margin-left:6px; vertical-align:middle;">DEMO DATA</span>' : '';
 
             tbody.innerHTML += `
                 <tr>
@@ -302,18 +465,21 @@ document.addEventListener("DOMContentLoaded", () => {
                         <input type="checkbox" class="compare-checkbox" data-id="${c.id}" ${isChecked}>
                     </td>
                     <td><strong>#${rank}</strong></td>
-                    <td><strong>${c.name}</strong></td>
+                    <td><strong>${c.name}</strong>${demoBadge}</td>
                     <td><strong style="color: var(--color-primary);">${m.overall_score}%</strong></td>
                     <td><span class="badge ${recClass}">${m.recommendation}</span></td>
                     <td>${c.experience_years.toFixed(1)} yrs</td>
                     <td>${topSkills || "N/A"}</td>
                     <td>${timelineText}</td>
                     <td>
-                        <button class="btn btn-outline btn-sm" onclick="window.location.hash='candidate/${c.id}'">Inspect</button>
+                        <button class="btn btn-outline btn-sm" onclick="window.location.hash='candidate/${c.id}'"><i data-lucide="eye" style="width:12px; height:12px; margin-right:4px; display:inline-block; vertical-align:middle;"></i>Inspect</button>
                     </td>
                 </tr>
             `;
         });
+
+        // Initialize Lucide icons on dynamic content
+        lucide.createIcons();
 
         // Add checkbox change event listeners
         document.querySelectorAll(".compare-checkbox").forEach(chk => {
@@ -387,6 +553,7 @@ document.addEventListener("DOMContentLoaded", () => {
             `;
             
             surface.innerHTML = Components.renderComparisonMatrix(data);
+            lucide.createIcons();
         } catch (e) {
             alert(e.message);
             window.location.hash = "candidates";
@@ -429,8 +596,75 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
-            // Fill basic profile fields
-            document.getElementById("prof-name").innerText = candidate.name;
+            // Tabs behavior
+            const btnTabIntelligence = document.getElementById("btn-tab-intelligence");
+            const btnTabExtracted = document.getElementById("btn-tab-extracted");
+            const panelTabIntelligence = document.getElementById("panel-tab-intelligence");
+            const panelTabRaw = document.getElementById("panel-tab-raw");
+
+            btnTabIntelligence.onclick = () => {
+                btnTabIntelligence.classList.add("active");
+                btnTabExtracted.classList.remove("active");
+                panelTabIntelligence.style.display = "grid";
+                panelTabRaw.style.display = "none";
+            };
+
+            btnTabExtracted.onclick = () => {
+                btnTabExtracted.classList.add("active");
+                btnTabIntelligence.classList.remove("active");
+                panelTabIntelligence.style.display = "none";
+                panelTabRaw.style.display = "flex";
+            };
+
+            // Reset tab navigation
+            btnTabIntelligence.click();
+
+            // Populate Raw JSON Panel
+            const rawObj = {
+                id: candidate.id,
+                name: candidate.name,
+                email: candidate.email,
+                phone: candidate.phone,
+                summary: candidate.summary,
+                experience_years: candidate.experience_years,
+                completeness_score: candidate.completeness_score,
+                skills: candidate.candidate_skills.map(cs => ({
+                    name: cs.skill.name,
+                    years_experience: cs.years_experience,
+                    evidence: cs.evidence_text
+                })),
+                experiences: candidate.experiences.map(exp => ({
+                    company: exp.company,
+                    role: exp.role,
+                    start_date: exp.start_date,
+                    end_date: exp.end_date,
+                    description: exp.description,
+                    years: exp.years
+                })),
+                educations: candidate.educations.map(edu => ({
+                    institution: edu.institution,
+                    degree: edu.degree,
+                    field_of_study: edu.field_of_study,
+                    start_date: edu.start_date,
+                    end_date: edu.end_date
+                })),
+                projects: candidate.projects.map(proj => ({
+                    title: proj.title,
+                    description: proj.description,
+                    technologies: proj.technologies
+                })),
+                timeline_issues: JSON.parse(candidate.timeline_issues || "[]")
+            };
+            document.getElementById("prof-raw-json").innerText = JSON.stringify(rawObj, null, 2);
+
+            // Fill basic profile fields with Demo Badges if applicable
+            const isDemo = ["John Doe", "Jane Smith", "Bob Jones", "Alice White", "Charlie Brown"].includes(candidate.name);
+            if (isDemo) {
+                document.getElementById("prof-name").innerHTML = `${candidate.name} <span class="badge badge-outline" style="font-size: 10px; color:#6B7280; border-color:#D1D5DB; font-weight:500; margin-left:8px; vertical-align:middle;">DEMO DATA</span>`;
+            } else {
+                document.getElementById("prof-name").innerText = candidate.name;
+            }
+            
             document.getElementById("prof-contact").innerText = `${candidate.email || "No email listed"} | ${candidate.phone || "No phone listed"}`;
             
             // Recommendation Badge
@@ -461,6 +695,9 @@ document.addEventListener("DOMContentLoaded", () => {
             } catch (err) {
                 sensList.innerHTML = `<p class="quick-action-tip">Error loading sensitivity analysis.</p>`;
             }
+
+            // Reinitialize vector icons inside details page
+            lucide.createIcons();
 
         } catch (e) {
             console.error(e);
@@ -735,14 +972,19 @@ document.addEventListener("DOMContentLoaded", () => {
             // Re-enable demo button in background
             setTimeout(() => {
                 btn.disabled = false;
-                btn.innerText = "⚡ Run 2-Minute Demo Run";
+                btn.innerHTML = '<i data-lucide="play" style="width:14px; height:14px; margin-right:6px; vertical-align:middle; display:inline-block;"></i>Run 2-Minute Demo Run';
+                lucide.createIcons();
             }, 3000);
 
         } catch (err) {
             alert("Demo failed: " + err.message);
             const btn = document.getElementById("btn-quick-run-demo");
             btn.disabled = false;
-            btn.innerText = "⚡ Run 2-Minute Demo Run";
+            btn.innerHTML = '<i data-lucide="play" style="width:14px; height:14px; margin-right:6px; vertical-align:middle; display:inline-block;"></i>Run 2-Minute Demo Run';
+            lucide.createIcons();
         }
     };
+
+    // Initialize Lucide icons on boot
+    lucide.createIcons();
 });

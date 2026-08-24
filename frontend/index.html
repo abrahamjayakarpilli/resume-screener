@@ -9,13 +9,15 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/css/styles.css">
+    <!-- Lucide Icons Vector Library -->
+    <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
     <div class="app-container">
         <!-- SIDEBAR NAVIGATION -->
         <aside class="app-sidebar">
             <div class="sidebar-logo">
-                <span class="logo-icon">🔍</span>
+                <i data-lucide="scan-eye" class="logo-icon-svg" style="color: var(--color-primary); width:24px; height:24px;"></i>
                 <div class="logo-text">
                     <h1>TalentLens AI</h1>
                     <p>Candidate Intelligence</p>
@@ -24,21 +26,21 @@
             
             <nav class="sidebar-nav">
                 <a href="#dashboard" class="nav-item active" id="nav-dashboard">
-                    <span class="nav-icon">📊</span> Dashboard
+                    <i data-lucide="layout-dashboard" class="nav-icon"></i> Dashboard
                 </a>
                 <a href="#jobs" class="nav-item" id="nav-jobs">
-                    <span class="nav-icon">💼</span> Jobs
+                    <i data-lucide="briefcase" class="nav-icon"></i> Jobs
                 </a>
                 <a href="#candidates" class="nav-item" id="nav-candidates">
-                    <span class="nav-icon">👥</span> Candidates
+                    <i data-lucide="users" class="nav-icon"></i> Candidates
                 </a>
                 <a href="#compare" class="nav-item" id="nav-compare">
-                    <span class="nav-icon">⚖️</span> Compare <span class="compare-badge" id="compare-count" style="display: none;">0</span>
+                    <i data-lucide="git-compare" class="nav-icon"></i> Compare <span class="compare-badge" id="compare-count" style="display: none;">0</span>
                 </a>
             </nav>
 
             <div class="sidebar-footer">
-                <div class="demo-badge">🔒 Standard Compliance</div>
+                <div class="demo-badge"><i data-lucide="shield-check" style="width:12px; height:12px; display:inline-block; vertical-align:middle; margin-right:4px;"></i>Standard Compliance</div>
                 <div class="demo-badge-sub">Biographical metrics ignored</div>
             </div>
         </aside>
@@ -51,8 +53,8 @@
                     <h2 id="page-title">Dashboard</h2>
                 </div>
                 <div class="header-actions">
-                    <button class="btn btn-primary" id="btn-create-job-modal">+ Create Job</button>
-                    <button class="btn btn-secondary" id="btn-upload-resumes-modal">🚀 Screen Resumes</button>
+                    <button class="btn btn-primary" id="btn-create-job-modal"><i data-lucide="plus-circle" style="width:14px; height:14px; margin-right:6px;"></i>Create Job</button>
+                    <button class="btn btn-secondary" id="btn-upload-resumes-modal"><i data-lucide="upload-cloud" style="width:14px; height:14px; margin-right:6px;"></i>Screen Resumes</button>
                 </div>
             </header>
 
@@ -64,41 +66,54 @@
                     <!-- Metric Cards -->
                     <div class="metrics-grid">
                         <div class="metric-card">
-                            <span class="metric-icon">💼</span>
-                            <div class="metric-info">
-                                <h3>Total Jobs</h3>
-                                <p class="metric-val" id="metric-total-jobs">0</p>
-                            </div>
-                        </div>
-                        <div class="metric-card">
-                            <span class="metric-icon">👥</span>
+                            <div class="metric-icon"><i data-lucide="users"></i></div>
                             <div class="metric-info">
                                 <h3>Total Candidates</h3>
-                                <p class="metric-val" id="metric-total-candidates">0</p>
+                                <p class="metric-val" id="metric-total-candidates">—</p>
                             </div>
                         </div>
                         <div class="metric-card">
-                            <span class="metric-icon">✅</span>
+                            <div class="metric-icon" style="color: var(--color-success); background-color: var(--color-success-bg);"><i data-lucide="check-square"></i></div>
                             <div class="metric-info">
                                 <h3>Shortlisted</h3>
-                                <p class="metric-val" id="metric-shortlisted">0</p>
+                                <p class="metric-val" id="metric-shortlisted">—</p>
                             </div>
                         </div>
                         <div class="metric-card">
-                            <span class="metric-icon">⚡</span>
+                            <div class="metric-icon" style="color: var(--color-warning); background-color: var(--color-warning-bg);"><i data-lucide="alert-circle"></i></div>
+                            <div class="metric-info">
+                                <h3>Needs Review</h3>
+                                <p class="metric-val" id="metric-needs-review">—</p>
+                            </div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-icon" style="color: var(--color-info); background-color: var(--color-info-bg);"><i data-lucide="zap"></i></div>
                             <div class="metric-info">
                                 <h3>Avg Match Score</h3>
-                                <p class="metric-val" id="metric-avg-score">0%</p>
+                                <p class="metric-val" id="metric-avg-score">—</p>
                             </div>
                         </div>
                     </div>
 
                     <!-- Dashboard Subsections -->
-                    <div class="dashboard-layouts">
+                    <div class="dashboard-layouts" id="dashboard-main-layouts">
                         <div class="layout-main">
+                            <!-- Top Candidate Rankings -->
+                            <div class="panel-card" style="margin-bottom: 24px;">
+                                <div class="panel-header">
+                                    <h3>Top Candidate Rankings</h3>
+                                    <i data-lucide="award" style="color: var(--color-primary); width:18px; height:18px;"></i>
+                                </div>
+                                <div class="ranking-list" id="dashboard-rankings-list">
+                                    <!-- Dynamic content -->
+                                </div>
+                            </div>
+                            
+                            <!-- Recent Screening Runs -->
                             <div class="panel-card">
                                 <div class="panel-header">
                                     <h3>Recent Screening Runs</h3>
+                                    <i data-lucide="history" style="width:18px; height:18px;"></i>
                                 </div>
                                 <div class="table-container">
                                     <table class="data-table" id="table-recent-runs">
@@ -119,13 +134,37 @@
                             </div>
                         </div>
                         <div class="layout-side">
+                            <!-- Recruiter Insights -->
+                            <div class="panel-card" style="margin-bottom: 24px;">
+                                <div class="panel-header">
+                                    <h3>Recruiter Insights</h3>
+                                    <i data-lucide="lightbulb" style="color: var(--color-warning); width:18px; height:18px;"></i>
+                                </div>
+                                <div class="panel-body" id="dashboard-insights-list">
+                                    <!-- Dynamic content -->
+                                </div>
+                            </div>
+
+                            <!-- Requirement Coverage -->
+                            <div class="panel-card" style="margin-bottom: 24px;">
+                                <div class="panel-header">
+                                    <h3>Requirement Coverage</h3>
+                                    <i data-lucide="bar-chart-2" style="width:18px; height:18px;"></i>
+                                </div>
+                                <div class="panel-body" id="dashboard-coverage-list">
+                                    <!-- Dynamic content -->
+                                </div>
+                            </div>
+
+                            <!-- Quick Actions -->
                             <div class="panel-card">
                                 <div class="panel-header">
                                     <h3>Quick Actions</h3>
+                                    <i data-lucide="zap" style="width:18px; height:18px;"></i>
                                 </div>
                                 <div class="quick-actions-list">
-                                    <button class="btn btn-outline" id="btn-quick-run-demo">⚡ Run 2-Minute Demo Run</button>
-                                    <p class="quick-action-tip">Automatically registers a Backend Developer Job and screens 5 high-fidelity synthetic resumes demonstrating diverse candidate profiles.</p>
+                                    <button class="btn btn-primary" id="btn-quick-run-demo" style="width:100%; justify-content:center; font-weight:600;"><i data-lucide="play" style="width:14px; height:14px; margin-right:6px;"></i>Run 2-Minute Demo Run</button>
+                                    <p class="quick-action-tip" style="margin-top: 6px;">Automatically registers a Backend Developer Job and screens 5 high-fidelity synthetic resumes demonstrating diverse candidate profiles.</p>
                                 </div>
                             </div>
                         </div>
@@ -180,9 +219,9 @@
 
                     <div class="panel-card">
                         <div class="table-actions-bar">
-                            <span class="selection-status-text" id="compare-selection-text">Select 2 to 4 candidates to run comparative analysis</span>
-                            <button class="btn btn-secondary" id="btn-run-comparison" disabled>⚖️ Compare Selected</button>
-                        </div>
+                        <span class="selection-status-text" id="compare-selection-text">Select 2 to 4 candidates to run comparative analysis</span>
+                        <button class="btn btn-secondary" id="btn-run-comparison" disabled><i data-lucide="git-compare" style="width:14px; height:14px; margin-right:6px; display:inline-block; vertical-align:middle;"></i>Compare Selected</button>
+                    </div>
                         <div class="table-container">
                             <table class="data-table" id="table-candidates-list">
                                 <thead>
@@ -208,7 +247,7 @@
 
                 <!-- 4. CANDIDATE DETAILS VIEW -->
                 <div id="view-candidate-details" class="view-panel" style="display: none;">
-                    <button class="btn-back" id="btn-back-to-candidates">← Back to Candidates</button>
+                    <button class="btn-back" id="btn-back-to-candidates"><i data-lucide="arrow-left" style="width:14px; height:14px; margin-right:6px; display:inline-block; vertical-align:middle;"></i>Back to Candidates</button>
                     
                     <div class="profile-header-card">
                         <div class="profile-meta">
@@ -228,7 +267,18 @@
                         </div>
                     </div>
 
-                    <div class="profile-details-grid">
+                    <!-- Tabs Selection Bar -->
+                    <div class="profile-tabs-bar">
+                        <button class="profile-tab-btn active" id="btn-tab-intelligence">
+                            <i data-lucide="brain-circuit" style="width:14px; height:14px; margin-right:6px; vertical-align:middle;"></i>Match Intelligence
+                        </button>
+                        <button class="profile-tab-btn" id="btn-tab-extracted">
+                            <i data-lucide="file-json" style="width:14px; height:14px; margin-right:6px; vertical-align:middle;"></i>Raw Extracted Profile
+                        </button>
+                    </div>
+
+                    <!-- Panel 1: Candidate Intelligence Dashboard -->
+                    <div class="profile-details-grid" id="panel-tab-intelligence">
                         <div class="profile-main-col">
                             <!-- Summary -->
                             <div class="detail-card">
@@ -291,6 +341,16 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
+
+                    <!-- Panel 2: Raw Extracted JSON block -->
+                    <div class="detail-card" id="panel-tab-raw" style="display: none; flex-direction: column; gap: 16px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--color-border); padding-bottom:12px; margin-bottom:16px;">
+                            <h3 style="margin-bottom:0; border-bottom:none;">Raw Extracted Profile Data</h3>
+                            <span class="badge badge-outline"><i data-lucide="shield" style="width:12px; height:12px; margin-right:4px; vertical-align:middle;"></i>Audit Log</span>
+                        </div>
+                        <p class="quick-action-tip" style="margin-bottom:8px;">This is the raw structured payload extracted from the candidate's resume document by the parsing pipeline before scoring and mapping are computed. Use this to audit the accuracy of parsing.</p>
+                        <pre class="code-viewer" id="prof-raw-json"></pre>
                     </div>
                 </div>
 
@@ -361,7 +421,7 @@
                 </div>
                 
                 <div class="upload-dropzone" id="dropzone-resumes">
-                    <span class="upload-icon">📁</span>
+                    <div class="upload-icon-svg" style="margin-bottom: 12px; color: var(--color-primary);"><i data-lucide="file-up" style="width:36px; height:36px; margin:0 auto;"></i></div>
                     <p class="upload-text">Drag and drop resumes here, or click to browse</p>
                     <p class="upload-subtext">Supports PDF and TXT formats (Max 5MB per file)</p>
                     <input type="file" id="file-input-resumes" multiple style="display: none;" accept=".pdf,.txt">
@@ -376,11 +436,11 @@
                 <div class="pipeline-loader" id="pipeline-processing-loader" style="display: none;">
                     <div class="spinner"></div>
                     <div class="pipeline-stages">
-                        <p class="pipeline-stage active" id="stage-upload">📤 Uploading Resumes...</p>
-                        <p class="pipeline-stage" id="stage-parse">🔍 Extracting text & parsing structured information...</p>
-                        <p class="pipeline-stage" id="stage-normalize">🧩 Normalizing skills...</p>
-                        <p class="pipeline-stage" id="stage-match">🧠 Performing AI evidence-backed matching...</p>
-                        <p class="pipeline-stage" id="stage-score">⚖️ Running deterministic scoring & timeline check...</p>
+                        <p class="pipeline-stage active" id="stage-upload"><i data-lucide="upload" style="width:12px; height:12px; margin-right:6px; vertical-align:middle; display:inline-block;"></i>Uploading Resumes...</p>
+                        <p class="pipeline-stage" id="stage-parse"><i data-lucide="file-text" style="width:12px; height:12px; margin-right:6px; vertical-align:middle; display:inline-block;"></i>Extracting text & parsing profile data...</p>
+                        <p class="pipeline-stage" id="stage-normalize"><i data-lucide="puzzle" style="width:12px; height:12px; margin-right:6px; vertical-align:middle; display:inline-block;"></i>Normalizing skills...</p>
+                        <p class="pipeline-stage" id="stage-match"><i data-lucide="brain-circuit" style="width:12px; height:12px; margin-right:6px; vertical-align:middle; display:inline-block;"></i>Performing semantic match mapping...</p>
+                        <p class="pipeline-stage" id="stage-score"><i data-lucide="scale" style="width:12px; height:12px; margin-right:6px; vertical-align:middle; display:inline-block;"></i>Running scoring and overlap checker...</p>
                     </div>
                 </div>
 

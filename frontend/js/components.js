@@ -37,23 +37,23 @@ const Components = {
         return matchRequirements.map(mr => {
             // Recommendation badges class
             let statusClass = "badge-outline";
-            let statusIcon = "? UNKNOWN";
+            let statusIcon = "UNKNOWN";
             if (mr.status === "MATCH") {
                 statusClass = "badge-success";
                 statusIcon = "✓ MATCH";
             } else if (mr.status === "PARTIAL") {
                 statusClass = "badge-warning";
                 statusIcon = "~ PARTIAL";
-            } else if (mr.status === "MISSING") {
-                statusClass = "badge-danger";
-                statusIcon = "× MISSING";
+            } else if (mr.status === "MISSING" || mr.status === "NO EVIDENCE") {
+                statusClass = "badge-no-evidence";
+                statusIcon = "NO EVIDENCE";
             }
 
             let confClass = "badge-outline";
             if (mr.confidence === "HIGH") confClass = "badge-success";
             else if (mr.confidence === "MEDIUM") confClass = "badge-warning";
             
-            const evidenceText = mr.evidence || "No evidence found.";
+            const evidenceText = mr.evidence || "No evidence found in the submitted resume.";
             const sourceText = mr.source_section ? `Location: ${mr.source_section}` : "Location: Not specified";
 
             return `
@@ -205,7 +205,7 @@ const Components = {
                 const matchVal = c.req_matches.find(m => m.requirement_id === req.id);
                 const status = matchVal ? matchVal.status : "UNKNOWN";
                 
-                let icon = "?";
+                let icon = "UNKNOWN";
                 let color = "color: var(--color-text-secondary);";
                 if (status === "MATCH") {
                     icon = "✓";
@@ -213,12 +213,13 @@ const Components = {
                 } else if (status === "PARTIAL") {
                     icon = "~";
                     color = "color: var(--color-warning); font-weight: bold; font-size: 16px;";
-                } else if (status === "MISSING") {
-                    icon = "×";
-                    color = "color: var(--color-error); font-weight: bold; font-size: 16px;";
+                } else if (status === "MISSING" || status === "NO EVIDENCE") {
+                    icon = "—";
+                    color = "color: var(--color-text-muted); font-weight: bold; font-size: 16px;";
                 }
                 
-                return `<td style="${color}">${icon}</td>`;
+                const hoverText = (status === "MISSING" || status === "NO EVIDENCE") ? "No evidence found in the submitted resume." : status;
+                return `<td style="${color}" title="${hoverText}">${icon}</td>`;
             }).join("");
 
             return `
