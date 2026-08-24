@@ -202,7 +202,10 @@ const Components = {
         // Dynamic Requirement Rows
         const reqRows = requirements.map(req => {
             const cells = candidates.map(c => {
-                const matchVal = c.req_matches.find(m => m.requirement_id === req.id);
+                const reqMatches = Array.isArray(c.req_matches) 
+                    ? c.req_matches 
+                    : (Array.isArray(c.requirement_matches) ? c.requirement_matches : []);
+                const matchVal = reqMatches.find(m => m.requirement_id === req.id);
                 const status = matchVal ? matchVal.status : "UNKNOWN";
                 
                 let icon = "UNKNOWN";

@@ -424,7 +424,7 @@ def compare_candidates(payload: CompareRequest, db: Session = Depends(get_db)):
             experience_years=cand.experience_years,
             strengths=strengths[:3],  # Top 3 strengths
             gaps=gaps[:3],            # Top 3 gaps
-            requirement_matches=req_matches
+            req_matches=req_matches
         ))
 
     # Generate comparative justification summary
@@ -433,8 +433,8 @@ def compare_candidates(payload: CompareRequest, db: Session = Depends(get_db)):
     second_candidate = summaries_sorted[1]
     
     # Analyze status differences
-    best_req_statuses = {rm["requirement_id"]: rm["status"] for rm in best_candidate.requirement_matches}
-    sec_req_statuses = {rm["requirement_id"]: rm["status"] for rm in second_candidate.requirement_matches}
+    best_req_statuses = {rm["requirement_id"]: rm["status"] for rm in best_candidate.req_matches}
+    sec_req_statuses = {rm["requirement_id"]: rm["status"] for rm in second_candidate.req_matches}
     
     better_reqs = []
     worse_reqs = []

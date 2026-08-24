@@ -215,7 +215,7 @@ class CompareCandidateSummary(BaseModel):
     experience_years: float
     strengths: List[str]
     gaps: List[str]
-    requirement_matches: List[dict]  # List of {"requirement_id": int, "status": str}
+    req_matches: List[dict]  # List of {"requirement_id": int, "status": str}
 
 class CompareResponse(BaseModel):
     job_title: str

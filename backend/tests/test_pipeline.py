@@ -109,3 +109,61 @@ def test_api_job_creation():
     data = res.json()
     assert data["title"] == "QA Engineer"
     assert len(data["requirements"]) == 2
+
+def test_api_candidate_comparison():
+    # 1. Create a Job
+    job_payload = {
+        "title": "Backend Architect",
+        "description": "Python, FastAPI, Postgres, Docker.",
+        "requirements": [
+            {"requirement_text": "Python", "category": "technical", "importance": "CRITICAL"},
+            {"requirement_text": "FastAPI", "category": "technical", "importance": "HIGH"}
+        ]
+    }
+    res_job = client.post("/api/jobs", json=job_payload)
+    assert res_job.status_code == 200
+    job_id = res_job.json()["id"]
+
+    # 2. Screen 2 files (executes synchronously under TestClient)
+    files = [
+        ("files", ("john_doe_excellent.txt", "John Doe\nSummary: Python developer with FastAPI.", "text/plain")),
+        ("files", ("jane_smith_aws_gap.txt", "Jane Smith\nSummary: General backend software developer.", "text/plain"))
+    ]
+    res_screen = client.post(f"/api/jobs/{job_id}/screen", files=files)
+    assert res_screen.status_code == 200
+    run_data = res_screen.json()
+    
+    # 3. Fetch runs to find Candidate IDs
+    res_runs = client.get("/api/screening-runs")
+    assert res_runs.status_code == 200
+    runs = res_runs.json()
+    
+    # Find the run we just created
+    latest_run = next(r for r in runs if r["id"] == run_data["id"])
+    matches = latest_run["matches"]
+    assert len(matches) == 2
+    
+    candidate_ids = [m["candidate"]["id"] for m in matches]
+    
+    # 4. Request Candidate Comparison
+    compare_payload = {"candidate_ids": candidate_ids}
+    res_compare = client.post("/api/candidates/compare", json=compare_payload)
+    assert res_compare.status_code == 200
+    compare_data = res_compare.json()
+    
+    # 5. Assertions on comparison schema mapping
+    assert compare_data["job_title"] == "Backend Architect"
+    assert len(compare_data["candidates"]) == 2
+    
+    # Verify req_matches property mapping
+    for cand in compare_data["candidates"]:
+        assert "req_matches" in cand
+        assert isinstance(cand["req_matches"], list)
+        assert len(cand["req_matches"]) >= 2
+        for rm in cand["req_matches"]:
+            assert "requirement_id" in rm
+            assert "status" in rm
+            
+    assert "why_higher_justification" in compare_data
+    assert len(compare_data["why_higher_justification"]) > 0
+
