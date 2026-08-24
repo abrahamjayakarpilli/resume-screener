@@ -433,8 +433,8 @@ def compare_candidates(payload: CompareRequest, db: Session = Depends(get_db)):
     second_candidate = summaries_sorted[1]
     
     # Analyze status differences
-    best_req_statuses = {rm["requirement_id"]: rm["status"] for rm in best_candidate.req_matches}
-    sec_req_statuses = {rm["requirement_id"]: rm["status"] for rm in second_candidate.req_matches}
+    best_req_statuses = {rm["requirement_id"]: rm["status"] for rm in best_candidate.requirement_matches}
+    sec_req_statuses = {rm["requirement_id"]: rm["status"] for rm in second_candidate.requirement_matches}
     
     better_reqs = []
     worse_reqs = []
