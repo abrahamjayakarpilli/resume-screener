@@ -119,7 +119,7 @@ const Components = {
         if (!warningsJSON) {
             return `
                 <div class="timeline-ok-item">
-                    <span>✓</span>
+                    <span style="display:flex; align-items:center; justify-content:center; color: var(--color-success);"><i data-lucide="check-circle" style="width:16px; height:16px;"></i></span>
                     <div>
                         <strong>Timeline Consistent</strong>
                         <p style="font-size: 11px; margin-top:2px;">No overlapping professional employments or degrees detected in work history.</p>
@@ -133,7 +133,7 @@ const Components = {
             if (!warnings || warnings.length === 0) {
                 return `
                     <div class="timeline-ok-item">
-                        <span>✓</span>
+                        <span style="display:flex; align-items:center; justify-content:center; color: var(--color-success);"><i data-lucide="check-circle" style="width:16px; height:16px;"></i></span>
                         <div>
                             <strong>Timeline Consistent</strong>
                             <p style="font-size: 11px; margin-top:2px;">No overlapping professional employments or degrees detected in work history.</p>
@@ -145,7 +145,7 @@ const Components = {
             return warnings.map(warn => {
                 return `
                     <div class="timeline-warning-item">
-                        <span>⚠️</span>
+                        <span style="display:flex; align-items:center; justify-content:center; color: var(--color-warning);"><i data-lucide="alert-triangle" style="width:16px; height:16px;"></i></span>
                         <div>
                             <strong>Potential Timeline Conflict</strong>
                             <p style="font-size: 11px; margin-top:2px;">${warn}</p>
