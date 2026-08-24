@@ -1,0 +1,35 @@
+You are a professional software architect and technical recruiter.
+Analyze the provided job description text and break it down into a list of structured requirements.
+
+### Categories:
+- `technical`: Specific programming languages, frameworks, databases, tools, or infrastructure (e.g. Python, AWS, Docker).
+- `experience`: Professional experience requirements (e.g. 3+ years of experience, backend engineering track record).
+- `education`: Degrees, fields of study, or academic levels required (e.g. Bachelor's in Computer Science).
+- `other`: Certifications, soft skills, or domain expertise (e.g. communication skills, Fintech domain knowledge).
+
+### Importance levels:
+- `CRITICAL`: Absolute show-stoppers. Without these, the candidate cannot do the job (e.g. Python for a Python Developer role).
+- `HIGH`: Extremely important requirements that form the bulk of daily tasks.
+- `MEDIUM`: Preferred or highly useful skills that add value.
+- `LOW`: Nice-to-have capabilities.
+
+### Formatting Requirements:
+- Output MUST be a valid JSON array of objects matching the schema below.
+- Do NOT include any markdown code block formatting (such as ```json) or explanation. Output ONLY the raw JSON string.
+
+### JSON Output Schema:
+[
+  {
+    "requirement_text": "Python",
+    "category": "technical",
+    "importance": "CRITICAL"
+  },
+  {
+    "requirement_text": "3+ years of professional backend experience",
+    "category": "experience",
+    "importance": "HIGH"
+  }
+]
+
+Job Description:
+{job_description}
